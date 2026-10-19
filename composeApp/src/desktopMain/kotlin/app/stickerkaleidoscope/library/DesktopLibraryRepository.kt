@@ -248,14 +248,32 @@ class DesktopLibraryRepository(private val root: Path) : LibraryRepository {
         }
     }
 
-    override suspend fun setFavorite(id: String, favorite: Boolean) = setFlag(id, "favorite", favorite, "updated")
-    override suspend fun setDeleted(id: String, deleted: Boolean) = setFlag(id, "deleted", deleted, if (deleted) "deleted" else "restored")
+    override suspend fun setFavorite(id: String, favorite: Boolean) = setFavorites(listOf(id), favorite)
+    override suspend fun setDeleted(id: String, deleted: Boolean) = setDeleted(listOf(id), deleted)
+    override suspend fun setFavorites(ids: List<String>, favorite: Boolean) = setFlag(ids, "favorite", favorite, "updated")
+    override suspend fun setDeleted(ids: List<String>, deleted: Boolean) = setFlag(ids, "deleted", deleted, if (deleted) "deleted" else "restored")
 
-    private suspend fun setFlag(id: String, column: String, value: Boolean, operation: String) = database { db ->
+    private suspend fun setFlag(ids: List<String>, column: String, value: Boolean, operation: String) = database { db ->
         transaction(db) {
             db.prepareStatement("UPDATE memes SET $column=?, updated_at=?, revision=revision+1 WHERE id=? AND $column<>?").use {
+                for (id in ids.distinct()) {
                 it.setBoolean(1, value); it.setLong(2, System.currentTimeMillis()); it.setString(3, id); it.setBoolean(4, value)
                 if (it.executeUpdate() > 0) recordChange(db, id, operation)
+                }
+            }
+        }
+    }
+
+    override suspend fun originals(ids: List<String>): List<OriginalFile> = database { db ->
+        db.prepareStatement("SELECT original_path,format FROM memes WHERE id=?").use { statement ->
+            ids.distinct().map { id ->
+                statement.setString(1, id)
+                statement.executeQuery().use { row ->
+                    if (!row.next()) throw LibraryException(LibraryError.MISSING_FILE)
+                    val path = resolveManaged(row.getString(1))
+                    if (!Files.isRegularFile(path)) throw LibraryException(LibraryError.MISSING_FILE)
+                    OriginalFile(path.toString(), row.getString(2))
+                }
             }
         }
     }

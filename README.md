@@ -7,6 +7,9 @@ Windows 优先的跨端表情管理器，使用 Kotlin + Compose Multiplatform�
 左右分隔条支持拖拽调整侧栏宽度，悬停显示调整光标与高亮；宽度目前仅在本次运行内保留。
 顶部布局开关可以分别显示或隐藏分类、表情和属性栏，至少保留一栏；恢复侧栏时保留本次运行中调整的宽度。
 导航、搜索、空库和属性区域使用 Compose Material 预设图标。
+网格支持点击复制、Ctrl/Shift 多选、空白区域拖动框选与右键批量操作。
+框选以完整图库的内容坐标计算，按住左键滚动时保留选区中的离屏项，反向滚动可缩小选区。
+可将图片或文件夹拖入窗口导入；静态图复制提供图片和原文件，GIF 保留原始动图数据，多张复制为文件列表。
 界面文案使用 Compose Resources，提供中文和英文，跟随系统语言；其他语言回退英文。参见 [多语言约定](docs/localization.md)。
 
 ## Windows 开发
@@ -78,3 +81,16 @@ Android Studio 的 JBR 可能不包含 `jpackage`，仅编译与开发运行不�
 ```
 
 新打包的程序位于 `composeApp/build/compose/binaries/main/app/Sticker Kaleidoscope/Sticker Kaleidoscope.exe`。
+
+## 真实样本验证
+
+```powershell
+# 默认使用 Windows 已知文件夹“图片”下的 piggy，兼容图片目录重定向。
+.\scripts\validate-samples.ps1 -DirectNetwork
+# 或指定已授权读取的样本目录。
+.\scripts\validate-samples.ps1 -SourceDirectory 'D:\your-samples' -DirectNetwork
+```
+
+脚本在 `artifacts` 下创建全新测试图库，并验证导入、重启、全部缩略图、原图哈希、重复导入、标签搜索、收藏和回收站。
+前后核对源文件列表与哈希，既不修改源目录，也不写入默认正式图库。
+未显式设置样本路径时，常规测试会跳过这项真实文件测试。样本原图和验证报告不纳入 Git。

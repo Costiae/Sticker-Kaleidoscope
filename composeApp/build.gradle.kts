@@ -30,13 +30,22 @@ kotlin {
             }
         }
         val desktopTest by getting {
-            dependencies { implementation(kotlin("test-junit")) }
+            dependencies {
+                implementation(kotlin("test-junit"))
+                implementation(compose.desktop.uiTestJUnit4)
+            }
         }
     }
 }
 
 compose.resources {
     packageOfResClass = "app.stickerkaleidoscope.resources"
+}
+
+tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
+    // A different opt-in sample directory must not reuse a previous test result.
+    inputs.property("sampleDirectory", providers.environmentVariable("STICKER_SAMPLE_DIR").orElse(""))
+    inputs.property("sampleOutput", providers.environmentVariable("STICKER_SAMPLE_OUTPUT").orElse(""))
 }
 
 compose.desktop {

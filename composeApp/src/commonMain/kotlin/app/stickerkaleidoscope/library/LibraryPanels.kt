@@ -48,7 +48,11 @@ internal fun LibraryActions(controller: LibraryController, state: LibraryState) 
             Icon(Icons.Outlined.Refresh, stringResource(Res.string.refresh_library))
         }
     }
+    Column(Modifier.fillMaxWidth().heightIn(min = 24.dp)) {
     if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
+    state.copiedCount?.let { count ->
+        Text(stringResource(Res.string.copied_report, count), style = MaterialTheme.typography.bodySmall)
+    }
     state.error?.let { reason ->
         Text(stringResource(reason.resource()), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
     }
@@ -72,6 +76,7 @@ internal fun LibraryActions(controller: LibraryController, state: LibraryState) 
             }
         }
     }
+    }
 }
 
 private fun LibraryError.resource() = when (this) {
@@ -79,34 +84,7 @@ private fun LibraryError.resource() = when (this) {
     LibraryError.INVALID_IMAGE -> Res.string.error_invalid_image
     LibraryError.TOO_LARGE -> Res.string.error_too_large
     LibraryError.MISSING_FILE -> Res.string.error_missing_file
-}
-
-@Composable
-internal fun MemeGrid(items: List<Meme>, selectedId: String?, controller: LibraryController, onSelect: (String) -> Unit) {
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(132.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(vertical = 12.dp),
-        modifier = Modifier.fillMaxSize()
-    ) {
-        items(items, key = { it.id }) { meme ->
-            Surface(
-                color = if (selectedId == meme.id) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainer,
-                shape = MaterialTheme.shapes.small,
-                modifier = Modifier.clickable { onSelect(meme.id) }
-            ) {
-                Column(Modifier.padding(8.dp)) {
-                    MemeThumbnail(meme.id, controller, Modifier.fillMaxWidth().height(112.dp))
-                    Spacer(Modifier.height(6.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(meme.title, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
-                        if (meme.favorite) Icon(Icons.Outlined.Star, stringResource(Res.string.favorite), Modifier.size(16.dp))
-                    }
-                }
-            }
-        }
-    }
+    LibraryError.CLIPBOARD -> Res.string.error_clipboard
 }
 
 @Composable

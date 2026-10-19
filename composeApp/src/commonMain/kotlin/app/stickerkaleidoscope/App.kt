@@ -40,7 +40,12 @@ fun App(controller: LibraryController) {
     var query by remember { mutableStateOf("") }
     var section by remember { mutableStateOf(LibrarySection.ALL) }
     var selectedId by remember { mutableStateOf<String?>(null) }
+    var selectedIds by remember { mutableStateOf(emptySet<String>()) }
     val items = remember(library.items, section, query) { library.items.matching(query, section.filter) }
+    LaunchedEffect(items.map { it.id }) {
+        selectedIds = selectedIds.intersect(items.map { it.id }.toSet())
+        if (selectedId !in selectedIds) selectedId = selectedIds.firstOrNull()
+    }
     val selectedMeme = items.find { it.id == selectedId }
     var leftWidth by remember { mutableStateOf(208f) }
     var rightWidth by remember { mutableStateOf(260f) }
@@ -50,6 +55,7 @@ fun App(controller: LibraryController) {
     val visibleCount = listOf(showNavigation, showLibrary, showProperties).count { it }
 
     MaterialTheme(colorScheme = darkColorScheme(primary = Color(0xFF9DBCA4))) {
+        ImportDropHost(controller) {
         Surface(Modifier.fillMaxSize()) {
             Column {
                 Row(
@@ -139,7 +145,8 @@ fun App(controller: LibraryController) {
                     }
                     }
                     if (showLibrary) {
-                    Column(Modifier.weight(1f).fillMaxHeight().padding(24.dp)) {
+                    Column(Modifier.weight(1f).fillMaxHeight().padding(top = 24.dp)) {
+                        Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(stringResource(section.title), style = MaterialTheme.typography.headlineSmall)
                             Spacer(Modifier.weight(1f))
@@ -161,8 +168,12 @@ fun App(controller: LibraryController) {
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
+                        }
                         if (items.isNotEmpty()) {
-                            MemeGrid(items, selectedId, controller) { selectedId = it }
+                            MemeGrid(items, selectedIds, selectedId, controller) { ids, focused ->
+                                selectedIds = ids
+                                selectedId = focused
+                            }
                         } else Column(
                             Modifier.weight(1f).fillMaxWidth(),
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -200,6 +211,7 @@ fun App(controller: LibraryController) {
                 }
             }
             }
+        }
         }
     }
 }

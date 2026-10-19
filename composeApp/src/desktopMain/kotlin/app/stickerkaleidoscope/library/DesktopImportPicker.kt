@@ -30,12 +30,22 @@ class DesktopImportPicker : ImportPicker {
             }
             if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) chooser.selectedFile.toPath() else null
         } ?: return emptyList()
-        return withContext(Dispatchers.IO) {
-            Files.walk(directory).use { files ->
-                files.filter { Files.isRegularFile(it) && !Files.isSymbolicLink(it) }
-                    .filter { it.fileName.toString().substringAfterLast('.', "").lowercase(Locale.ROOT) in setOf("png", "jpg", "jpeg", "gif", "webp") }
-                    .map { it.toAbsolutePath().toString() }.toList()
+        return expandPaths(listOf(directory.toString()))
+    }
+
+    override suspend fun expandPaths(paths: List<String>): List<String> = withContext(Dispatchers.IO) {
+        buildList {
+            for (value in paths) {
+                val path = java.nio.file.Path.of(value)
+                if (Files.isSymbolicLink(path)) continue
+                if (Files.isDirectory(path)) {
+                    Files.walk(path).use { files ->
+                        files.filter { Files.isRegularFile(it) && !Files.isSymbolicLink(it) }
+                            .filter { it.fileName.toString().substringAfterLast('.', "").lowercase(Locale.ROOT) in setOf("png", "jpg", "jpeg", "gif", "webp") }
+                            .forEach { add(it.toAbsolutePath().normalize().toString()) }
+                    }
+                } else add(path.toAbsolutePath().normalize().toString())
             }
-        }
+        }.distinct()
     }
 }

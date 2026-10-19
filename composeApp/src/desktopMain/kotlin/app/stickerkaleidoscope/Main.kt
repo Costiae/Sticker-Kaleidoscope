@@ -13,6 +13,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import app.stickerkaleidoscope.library.DesktopLibraryRepository
 import app.stickerkaleidoscope.library.DesktopImportPicker
 import app.stickerkaleidoscope.library.LibraryController
+import app.stickerkaleidoscope.library.DesktopLibraryClipboard
 
 fun main() = application {
     Window(
@@ -23,7 +24,7 @@ fun main() = application {
         window.minimumSize = Dimension(960, 600)
         val scope = rememberCoroutineScope()
         val controller = remember(scope) {
-            LibraryController(DesktopLibraryRepository(DesktopLibraryRepository.defaultRoot()), DesktopImportPicker(), scope)
+            LibraryController(DesktopLibraryRepository(DesktopLibraryRepository.defaultRoot()), DesktopImportPicker(), scope, DesktopLibraryClipboard())
         }
         App(controller)
     }

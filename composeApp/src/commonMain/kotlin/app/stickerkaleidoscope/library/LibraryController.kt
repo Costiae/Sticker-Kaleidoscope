@@ -13,14 +13,16 @@ data class LibraryState(
     val busy: Boolean = false,
     val loaded: Boolean = false,
     val error: LibraryError? = null,
-    val report: ImportReport? = null
+    val report: ImportReport? = null,
+    val copiedCount: Int? = null
 )
 
 /** UI orchestration only: file, database and image work stay behind platform interfaces. */
 class LibraryController(
     private val repository: LibraryRepository,
     private val picker: ImportPicker,
-    private val scope: CoroutineScope
+    private val scope: CoroutineScope,
+    private val clipboard: LibraryClipboard? = null
 ) {
     private val mutableState = MutableStateFlow(LibraryState())
     val state = mutableState.asStateFlow()
@@ -28,9 +30,20 @@ class LibraryController(
     fun refresh() = execute { }
     fun importFiles() = execute { import(picker.chooseFiles()) }
     fun importDirectory() = execute { import(picker.chooseDirectory()) }
+    fun importPaths(paths: List<String>) = execute { import(picker.expandPaths(paths)) }
     fun save(id: String, title: String, tags: List<String>) = execute { repository.update(id, title, tags) }
     fun favorite(meme: Meme) = execute { repository.setFavorite(meme.id, !meme.favorite) }
     fun trash(meme: Meme) = execute { repository.setDeleted(meme.id, !meme.deleted) }
+    fun favorite(ids: List<String>, value: Boolean) = execute { repository.setFavorites(ids, value) }
+    fun trash(ids: List<String>, value: Boolean) = execute { repository.setDeleted(ids, value) }
+    fun copy(ids: List<String>) = execute(reload = false) {
+        val files = repository.originals(ids)
+        if (files.isNotEmpty()) {
+            val destination = clipboard ?: throw LibraryException(LibraryError.CLIPBOARD)
+            destination.copy(files)
+            mutableState.update { it.copy(copiedCount = files.size) }
+        }
+    }
     suspend fun thumbnail(id: String) = repository.thumbnail(id)
 
     private suspend fun import(paths: List<String>) {
@@ -40,14 +53,16 @@ class LibraryController(
         }
     }
 
-    private fun execute(operation: suspend () -> Unit): Job? {
+    private fun execute(reload: Boolean = true, operation: suspend () -> Unit): Job? {
         if (mutableState.value.busy) return null
-        mutableState.update { it.copy(busy = true, error = null, report = null) }
+        mutableState.update { it.copy(busy = true, error = null, report = null, copiedCount = null) }
         return scope.launch {
             try {
                 operation()
-                val items = repository.list(filter = LibraryFilter.ALL) + repository.list(filter = LibraryFilter.TRASH)
-                mutableState.update { it.copy(items = items, loaded = true) }
+                if (reload) {
+                    val items = repository.list(filter = LibraryFilter.ALL) + repository.list(filter = LibraryFilter.TRASH)
+                    mutableState.update { it.copy(items = items, loaded = true) }
+                }
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (failure: LibraryException) {
