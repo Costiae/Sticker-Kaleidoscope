@@ -1,0 +1,45 @@
+<resources>
+    <string name="layout_title">布局</string>
+    <string name="pane_navigation">分类</string>
+    <string name="pane_library">表情</string>
+    <string name="app_name">表情万花筒</string>
+    <string name="local_library">本地表情库</string>
+    <string name="section_all">全部表情</string>
+    <string name="section_favorites">收藏</string>
+    <string name="section_uncategorized">未分类</string>
+    <string name="sync_disconnected">尚未连接同步</string>
+    <string name="resize_navigation">调整分类侧栏宽度</string>
+    <string name="resize_properties">调整属性侧栏宽度</string>
+    <string name="search_placeholder">搜索文字、角色或标签</string>
+    <string name="clear_search">清空搜索</string>
+    <string name="library_empty">表情库为空</string>
+    <string name="search_empty">暂无匹配表情</string>
+    <string name="section_trash">回收站</string>
+    <string name="import_files">导入文件</string>
+    <string name="import_folder">导入文件夹</string>
+    <string name="refresh_library">刷新表情库</string>
+    <string name="import_report">已导入：%1$d · 重复：%2$d · 失败：%3$d</string>
+    <string name="show_failures">查看失败文件</string>
+    <string name="hide_failures">收起失败文件</string>
+    <string name="import_failure">%1$s：%2$s</string>
+    <string name="error_storage">无法访问表情库，请检查存储权限及剩余空间后重试。</string>
+    <string name="error_invalid_image">不支持的图片格式或文件已损坏。</string>
+    <string name="error_too_large">图片超过 50 MiB、单边 16,384 像素或总计 6,400 万像素的限制。</string>
+    <string name="error_missing_file">源文件不存在或无法读取。</string>
+    <string name="import_hint">导入 PNG、JPEG、GIF 或 WebP；选择文件夹可递归扫描。</string>
+    <string name="trash_hint">删除的表情可在这里恢复，原图会保留。</string>
+    <string name="image_metadata">%1$s · %2$d × %3$d · %4$d 字节</string>
+    <string name="meme_title">标题</string>
+    <string name="meme_tags">标签</string>
+    <string name="tags_hint">用逗号或换行分隔标签，未打标签的表情归入「未分类」。</string>
+    <string name="save_changes">保存修改</string>
+    <string name="favorite">收藏</string>
+    <string name="unfavorite">取消收藏</string>
+    <string name="move_to_trash">移入回收站</string>
+    <string name="restore_meme">恢复</string>
+    <string name="properties_title">属性</string>
+    <string name="properties_hint">选择表情后查看角色、标签与分析结果。</string>
+    <plurals name="meme_count">
+        <item quantity="other">%1$d 张</item>
+    </plurals>
+</resources>

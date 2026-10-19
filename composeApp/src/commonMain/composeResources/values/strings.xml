@@ -1,0 +1,46 @@
+<resources>
+    <string name="layout_title">Layout</string>
+    <string name="pane_navigation">Navigation</string>
+    <string name="pane_library">Library</string>
+    <string name="app_name">Sticker Kaleidoscope</string>
+    <string name="local_library">Local library</string>
+    <string name="section_all">All memes</string>
+    <string name="section_favorites">Favorites</string>
+    <string name="section_uncategorized">Uncategorized</string>
+    <string name="sync_disconnected">Sync not connected</string>
+    <string name="resize_navigation">Resize navigation sidebar</string>
+    <string name="resize_properties">Resize properties sidebar</string>
+    <string name="search_placeholder">Search text, characters or tags</string>
+    <string name="clear_search">Clear search</string>
+    <string name="library_empty">Your library is empty</string>
+    <string name="search_empty">No matching memes</string>
+    <string name="section_trash">Trash</string>
+    <string name="import_files">Import files</string>
+    <string name="import_folder">Import folder</string>
+    <string name="refresh_library">Refresh library</string>
+    <string name="import_report">Imported: %1$d · Duplicates: %2$d · Failed: %3$d</string>
+    <string name="show_failures">Show failed files</string>
+    <string name="hide_failures">Hide failed files</string>
+    <string name="import_failure">%1$s: %2$s</string>
+    <string name="error_storage">Could not access the library. Check storage access and available space, then retry.</string>
+    <string name="error_invalid_image">Unsupported or damaged image.</string>
+    <string name="error_too_large">Image exceeds 50 MiB, 16,384 pixels per side, or 64 million pixels in total.</string>
+    <string name="error_missing_file">The source file is missing or cannot be read.</string>
+    <string name="import_hint">Import PNG, JPEG, GIF or WebP files, or choose a folder to scan recursively.</string>
+    <string name="trash_hint">Deleted memes can be restored here. Originals are retained.</string>
+    <string name="image_metadata">%1$s · %2$d × %3$d · %4$d bytes</string>
+    <string name="meme_title">Title</string>
+    <string name="meme_tags">Tags</string>
+    <string name="tags_hint">Separate tags with commas or line breaks. Untagged memes appear in Uncategorized.</string>
+    <string name="save_changes">Save changes</string>
+    <string name="favorite">Favorite</string>
+    <string name="unfavorite">Remove favorite</string>
+    <string name="move_to_trash">Move to trash</string>
+    <string name="restore_meme">Restore</string>
+    <string name="properties_title">Properties</string>
+    <string name="properties_hint">Select a meme to view characters, tags and analysis.</string>
+    <plurals name="meme_count">
+        <item quantity="one">%1$d meme</item>
+        <item quantity="other">%1$d memes</item>
+    </plurals>
+</resources>

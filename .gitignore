@@ -1,0 +1,15 @@
+.gradle/
+.kotlin/
+**/build/
+.idea/
+*.iml
+local.properties
+.env
+.env.*
+!.env.example
+*.keystore
+*.jks
+/data/
+/artifacts/
+Thumbs.db
+Desktop.ini
