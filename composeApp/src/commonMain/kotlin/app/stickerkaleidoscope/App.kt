@@ -88,6 +88,9 @@ fun App(controller: LibraryController, titleBar: @Composable () -> Unit = {}) {
         Surface(Modifier.fillMaxSize()) {
             Column {
                 titleBar()
+                library.progressText?.let { status ->
+                    Text(status, Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 2.dp), style = MaterialTheme.typography.labelSmall)
+                }
                 if (showRestartNotice) {
                     Surface(
                         color = MaterialTheme.colorScheme.tertiaryContainer,

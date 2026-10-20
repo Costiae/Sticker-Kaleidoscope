@@ -4,6 +4,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -67,6 +68,7 @@ class LibraryController(
                 report = ImportReport(report.imported + next.imported, report.duplicates + next.duplicates, report.failures + next.failures)
                 val displayName = path.substringAfterLast('/').substringAfterLast('/')
                 mutableState.update { it.copy(progress = (index + 1).toFloat() / paths.size, progressText = "${index + 1}/${paths.size}: $displayName", report = report) }
+                yield()
             }
         }
     }
