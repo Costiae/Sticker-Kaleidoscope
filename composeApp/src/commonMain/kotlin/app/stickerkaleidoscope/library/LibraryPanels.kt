@@ -48,6 +48,7 @@ internal fun LibraryActions(controller: LibraryController, state: LibraryState) 
             Icon(Icons.Outlined.Refresh, stringResource(Res.string.refresh_library))
         }
     }
+    LibraryProgress(state)
     Column(Modifier.fillMaxWidth().heightIn(min = 24.dp)) {
     state.copiedCount?.let { count ->
         Text(stringResource(Res.string.copied_report, count), style = MaterialTheme.typography.bodySmall)
@@ -80,41 +81,42 @@ internal fun LibraryActions(controller: LibraryController, state: LibraryState) 
 
 @Composable
 internal fun LibraryProgress(state: LibraryState) {
-    if (!state.busy) return
     Column(
-        Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+        Modifier.fillMaxWidth().height(44.dp).padding(vertical = 4.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        val progress = state.progress
-        if (progress == null) LinearProgressIndicator(Modifier.fillMaxWidth())
-        else {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                LinearProgressIndicator({ progress }, Modifier.weight(1f))
-                Spacer(Modifier.width(8.dp))
-                Text("${(progress * 100).toInt()}%", style = MaterialTheme.typography.labelSmall)
+        if (state.busy) {
+            val progress = state.progress
+            if (progress == null) LinearProgressIndicator(Modifier.fillMaxWidth())
+            else {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    LinearProgressIndicator({ progress }, Modifier.weight(1f))
+                    Spacer(Modifier.width(8.dp))
+                    Text("${(progress * 100).toInt()}%", style = MaterialTheme.typography.labelSmall)
+                }
             }
-        }
-        val current = state.progressCurrent
-        val total = state.progressTotal
-        val name = state.progressText
-        val scanned = state.progressScanCount
-        if (current != null && total != null && name != null) {
-            Text(
-                stringResource(Res.string.import_progress, current, total, name),
-                style = MaterialTheme.typography.bodySmall,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        } else if (scanned != null) {
-            Text(
-                stringResource(Res.string.import_scanning, scanned),
-                style = MaterialTheme.typography.bodySmall
-            )
-        } else if (current != null && total != null) {
-            Text(
-                stringResource(Res.string.import_preparing, total),
-                style = MaterialTheme.typography.bodySmall
-            )
+            val current = state.progressCurrent
+            val total = state.progressTotal
+            val name = state.progressText
+            val scanned = state.progressScanCount
+            if (current != null && total != null && name != null) {
+                Text(
+                    stringResource(Res.string.import_progress, current, total, name),
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            } else if (scanned != null) {
+                Text(
+                    stringResource(Res.string.import_scanning, scanned),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            } else if (current != null && total != null) {
+                Text(
+                    stringResource(Res.string.import_preparing, total),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
     }
 }
