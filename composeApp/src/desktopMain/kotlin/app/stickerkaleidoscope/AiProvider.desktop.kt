@@ -1,26 +1,33 @@
 package app.stickerkaleidoscope
 
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpHeaders
+import io.ktor.http.isSuccess
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 actual object AiProvider {
-    actual suspend fun test(config: AiProviderConfig): Result<String> = runCatching {
-        val endpoint = config.url.trimEnd('/') + "/models"
-        val builder = HttpRequest.newBuilder(URI(endpoint)).GET().header("Accept", "application/json")
-        if (config.apiKey.isNotBlank()) builder.header("Authorization", "Bearer ${config.apiKey}")
-        val response = HttpClient.newHttpClient().send(builder.build(), HttpResponse.BodyHandlers.ofString())
-        if (response.statusCode() !in 200..299) error("HTTP ${response.statusCode()}")
-        "HTTP ${response.statusCode()}"
-    }
-    actual suspend fun models(config: AiProviderConfig): Result<List<String>> = runCatching {
-        val endpoint = config.url.trimEnd('/') + "/models"
-        val builder = HttpRequest.newBuilder(URI(endpoint)).GET().header("Accept", "application/json")
-        if (config.apiKey.isNotBlank()) builder.header("Authorization", "Bearer ${config.apiKey}")
-        val body = HttpClient.newHttpClient().send(builder.build(), HttpResponse.BodyHandlers.ofString()).let {
-            if (it.statusCode() !in 200..299) error("HTTP ${it.statusCode()}") else it.body()
+    private val json = Json { ignoreUnknownKeys = true }
+    private val client = HttpClient(CIO) { install(ContentNegotiation) { json(json) }; expectSuccess = false }
+    private suspend fun request(config: AiProviderConfig): String {
+        val response = client.get(config.url.trimEnd('/') + "/models") {
+            header(HttpHeaders.Accept, "application/json")
+            if (config.apiKey.isNotBlank()) header(HttpHeaders.Authorization, "Bearer ${config.apiKey}")
         }
-        Regex("\\\"id\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"").findAll(body).map { it.groupValues[1] }.distinct().toList()
+        val body = response.bodyAsText()
+        if (!response.status.isSuccess()) error("HTTP ${response.status.value}: ${body.take(240)}")
+        return body
+    }
+    actual suspend fun test(config: AiProviderConfig): Result<String> = runCatching { request(config); "HTTP 200" }
+    actual suspend fun models(config: AiProviderConfig): Result<List<String>> = runCatching {
+        json.parseToJsonElement(request(config)).jsonObject["data"]?.jsonArray?.mapNotNull { it.jsonObject["id"]?.jsonPrimitive?.content }?.distinct() ?: emptyList()
     }
 }
