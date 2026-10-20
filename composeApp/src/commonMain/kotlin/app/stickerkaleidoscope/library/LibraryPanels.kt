@@ -59,6 +59,7 @@ internal fun LibraryActions(controller: LibraryController, state: LibraryState) 
                 Text("${(progress * 100).toInt()}%", style = MaterialTheme.typography.labelSmall)
             }
         }
+        state.progressText?.let { Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis) }
     }
     state.copiedCount?.let { count ->
         Text(stringResource(Res.string.copied_report, count), style = MaterialTheme.typography.bodySmall)

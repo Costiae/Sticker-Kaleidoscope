@@ -15,7 +15,8 @@ data class LibraryState(
     val error: LibraryError? = null,
     val report: ImportReport? = null,
     val copiedCount: Int? = null,
-    val progress: Float? = null
+    val progress: Float? = null,
+    val progressText: String? = null
 )
 
 /** UI orchestration only: file, database and image work stay behind platform interfaces. */
@@ -64,14 +65,15 @@ class LibraryController(
             paths.forEachIndexed { index, path ->
                 val next = repository.importFiles(listOf(path))
                 report = ImportReport(report.imported + next.imported, report.duplicates + next.duplicates, report.failures + next.failures)
-                mutableState.update { it.copy(progress = (index + 1).toFloat() / paths.size, report = report) }
+                val displayName = path.substringAfterLast('/').substringAfterLast('/')
+                mutableState.update { it.copy(progress = (index + 1).toFloat() / paths.size, progressText = "${index + 1}/${paths.size}: $displayName", report = report) }
             }
         }
     }
 
     private fun execute(reload: Boolean = true, operation: suspend () -> Unit): Job? {
         if (mutableState.value.busy) return null
-        mutableState.update { it.copy(busy = true, progress = null, error = null, report = null, copiedCount = null) }
+        mutableState.update { it.copy(busy = true, progress = null, progressText = null, error = null, report = null, copiedCount = null) }
         return scope.launch {
             try {
                 operation()
@@ -86,8 +88,9 @@ class LibraryController(
             } catch (_: Exception) {
                 mutableState.update { it.copy(error = LibraryError.STORAGE) }
             } finally {
-                mutableState.update { it.copy(busy = false, progress = null) }
+                mutableState.update { it.copy(busy = false, progress = null, progressText = null) }
             }
         }
     }
 }
+
