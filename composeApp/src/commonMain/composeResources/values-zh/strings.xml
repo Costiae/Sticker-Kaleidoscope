@@ -19,6 +19,15 @@
     <string name="settings_hint">配置当前应用，并为未来的集成功能预留入口。</string>
     <string name="settings_appearance">外观</string>
     <string name="settings_language">语言</string>
+    <string name="settings_font_size">字号</string>
+    <string name="settings_font_weight">字重</string>
+    <string name="settings_small">小</string>
+    <string name="settings_medium">中</string>
+    <string name="settings_large">大</string>
+    <string name="settings_light">细</string>
+    <string name="settings_normal">正常</string>
+    <string name="settings_bold">粗</string>
+    <string name="settings_language_restart">语言切换将在重启应用后生效。</string>
     <string name="settings_font">字体</string>
     <string name="settings_system">跟随系统</string>
     <string name="settings_chinese">简体中文</string>

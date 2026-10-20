@@ -12,12 +12,16 @@ import org.jetbrains.compose.resources.painterResource
 import app.stickerkaleidoscope.resources.app_icon
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import java.util.Locale
 import app.stickerkaleidoscope.library.DesktopLibraryRepository
 import app.stickerkaleidoscope.library.DesktopImportPicker
 import app.stickerkaleidoscope.library.LibraryController
 import app.stickerkaleidoscope.library.DesktopLibraryClipboard
 
 fun main() = application {
+    val language = AppPreferences.language
+    if (language == "zh") Locale.setDefault(Locale.SIMPLIFIED_CHINESE)
+    if (language == "en") Locale.setDefault(Locale.ENGLISH)
     val state = rememberWindowState(width = 1180.dp, height = 760.dp)
     Window(
         onCloseRequest = ::exitApplication,

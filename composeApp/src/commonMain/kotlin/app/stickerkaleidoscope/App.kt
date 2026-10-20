@@ -20,6 +20,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.dp
@@ -59,10 +61,18 @@ fun App(controller: LibraryController, titleBar: @Composable () -> Unit = {}) {
     val visibleCount = listOf(showNavigation, showLibrary, showProperties).count { it }
 
     var fontChoice by remember { mutableStateOf(AppPreferences.font) }
-    val typography = when (fontChoice) {
-        "mono" -> Typography().run { copy(bodyLarge = bodyLarge.copy(fontFamily = FontFamily.Monospace), bodyMedium = bodyMedium.copy(fontFamily = FontFamily.Monospace), labelLarge = labelLarge.copy(fontFamily = FontFamily.Monospace)) }
-        else -> Typography()
-    }
+    var fontSizeChoice by remember { mutableStateOf(AppPreferences.fontSize) }
+    var fontWeightChoice by remember { mutableStateOf(AppPreferences.fontWeight) }
+    val baseTypography = Typography()
+    val family = if (fontChoice == "mono") FontFamily.Monospace else FontFamily.SansSerif
+    val size = when (fontSizeChoice) { "small" -> 0.9f; "large" -> 1.15f; else -> 1f }
+    val weight = when (fontWeightChoice) { "light" -> FontWeight.Light; "bold" -> FontWeight.Bold; else -> FontWeight.Normal }
+    val typography = baseTypography.copy(
+        bodyLarge = baseTypography.bodyLarge.copy(fontFamily = family, fontSize = (16 * size).sp, fontWeight = weight),
+        bodyMedium = baseTypography.bodyMedium.copy(fontFamily = family, fontSize = (14 * size).sp, fontWeight = weight),
+        labelLarge = baseTypography.labelLarge.copy(fontFamily = family, fontSize = (14 * size).sp, fontWeight = weight),
+        titleMedium = baseTypography.titleMedium.copy(fontFamily = family, fontWeight = weight)
+    )
     MaterialTheme(colorScheme = darkColorScheme(primary = Color(0xFF9DBCA4)), typography = typography) {
         ImportDropHost(controller) {
         Surface(Modifier.fillMaxSize()) {
@@ -101,7 +111,7 @@ fun App(controller: LibraryController, titleBar: @Composable () -> Unit = {}) {
                 }
                 HorizontalDivider()
             if (showSettings) {
-                SettingsPage(onFontChange = { fontChoice = it })
+                SettingsPage(onFontChange = { fontChoice = it }, onFontSizeChange = { fontSizeChoice = it }, onFontWeightChange = { fontWeightChoice = it })
             } else BoxWithConstraints(Modifier.weight(1f)) {
                 // Reserve room for the content when the window shrinks.
                 val budget = (maxWidth.value - (if (showLibrary) 360f else 0f) - (visibleCount - 1) * 8f).coerceAtLeast(0f)
@@ -245,9 +255,11 @@ fun App(controller: LibraryController, titleBar: @Composable () -> Unit = {}) {
 }
 
 @Composable
-private fun SettingsPage(onFontChange: (String) -> Unit) {
+private fun SettingsPage(onFontChange: (String) -> Unit, onFontSizeChange: (String) -> Unit, onFontWeightChange: (String) -> Unit) {
     var language by remember { mutableStateOf(AppPreferences.language) }
     var font by remember { mutableStateOf(AppPreferences.font) }
+    var fontSize by remember { mutableStateOf(AppPreferences.fontSize) }
+    var fontWeight by remember { mutableStateOf(AppPreferences.fontWeight) }
     var syncSource by remember { mutableStateOf(AppPreferences.syncSource) }
     var provider by remember { mutableStateOf(AppPreferences.modelProvider) }
     Column(
@@ -258,7 +270,10 @@ private fun SettingsPage(onFontChange: (String) -> Unit) {
         Text(stringResource(Res.string.settings_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         SettingsSection(stringResource(Res.string.settings_appearance)) {
             SettingsDropdown(stringResource(Res.string.settings_language), language, listOf("system" to Res.string.settings_system, "zh" to Res.string.settings_chinese, "en" to Res.string.settings_english)) { language = it; AppPreferences.language = it }
+            Text(stringResource(Res.string.settings_language_restart), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             SettingsDropdown(stringResource(Res.string.settings_font), font, listOf("system" to Res.string.settings_system, "sans" to Res.string.settings_font_sans, "mono" to Res.string.settings_font_mono)) { font = it; AppPreferences.font = it; onFontChange(it) }
+            SettingsDropdown(stringResource(Res.string.settings_font_size), fontSize, listOf("small" to Res.string.settings_small, "medium" to Res.string.settings_medium, "large" to Res.string.settings_large)) { fontSize = it; AppPreferences.fontSize = it; onFontSizeChange(it) }
+            SettingsDropdown(stringResource(Res.string.settings_font_weight), fontWeight, listOf("light" to Res.string.settings_light, "normal" to Res.string.settings_normal, "bold" to Res.string.settings_bold)) { fontWeight = it; AppPreferences.fontWeight = it; onFontWeightChange(it) }
         }
         SettingsSection(stringResource(Res.string.settings_sync)) {
             OutlinedTextField(syncSource, { syncSource = it; AppPreferences.syncSource = it }, Modifier.fillMaxWidth(), label = { Text(stringResource(Res.string.settings_sync_source)) }, placeholder = { Text(stringResource(Res.string.settings_sync_source_hint)) }, singleLine = true)
