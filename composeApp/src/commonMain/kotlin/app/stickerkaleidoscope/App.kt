@@ -58,6 +58,7 @@ fun App(controller: LibraryController, titleBar: @Composable () -> Unit = {}) {
     var showLibrary by remember { mutableStateOf(true) }
     var showProperties by remember { mutableStateOf(true) }
     var showSettings by remember { mutableStateOf(false) }
+    var showRestartNotice by remember { mutableStateOf(false) }
     val visibleCount = listOf(showNavigation, showLibrary, showProperties).count { it }
 
     var fontChoice by remember { mutableStateOf(AppPreferences.font) }
@@ -78,6 +79,20 @@ fun App(controller: LibraryController, titleBar: @Composable () -> Unit = {}) {
         Surface(Modifier.fillMaxSize()) {
             Column {
                 titleBar()
+                if (showRestartNotice) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp)
+                    ) {
+                        Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Outlined.Info, null, Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(Res.string.settings_language_restart), modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+                            IconButton(onClick = { showRestartNotice = false }) { Icon(Icons.Outlined.Close, stringResource(Res.string.clear_search)) }
+                        }
+                    }
+                }
                 Row(
                     Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -111,7 +126,7 @@ fun App(controller: LibraryController, titleBar: @Composable () -> Unit = {}) {
                 }
                 HorizontalDivider()
             if (showSettings) {
-                SettingsPage(onFontChange = { fontChoice = it }, onFontSizeChange = { fontSizeChoice = it }, onFontWeightChange = { fontWeightChoice = it })
+                SettingsPage(onLanguageChange = { showRestartNotice = true }, onFontChange = { fontChoice = it }, onFontSizeChange = { fontSizeChoice = it }, onFontWeightChange = { fontWeightChoice = it })
             } else BoxWithConstraints(Modifier.weight(1f)) {
                 // Reserve room for the content when the window shrinks.
                 val budget = (maxWidth.value - (if (showLibrary) 360f else 0f) - (visibleCount - 1) * 8f).coerceAtLeast(0f)
@@ -255,7 +270,7 @@ fun App(controller: LibraryController, titleBar: @Composable () -> Unit = {}) {
 }
 
 @Composable
-private fun SettingsPage(onFontChange: (String) -> Unit, onFontSizeChange: (String) -> Unit, onFontWeightChange: (String) -> Unit) {
+private fun SettingsPage(onLanguageChange: () -> Unit, onFontChange: (String) -> Unit, onFontSizeChange: (String) -> Unit, onFontWeightChange: (String) -> Unit) {
     var language by remember { mutableStateOf(AppPreferences.language) }
     var font by remember { mutableStateOf(AppPreferences.font) }
     var fontSize by remember { mutableStateOf(AppPreferences.fontSize) }
@@ -269,7 +284,7 @@ private fun SettingsPage(onFontChange: (String) -> Unit, onFontSizeChange: (Stri
         Text(stringResource(Res.string.settings_title), style = MaterialTheme.typography.headlineMedium)
         Text(stringResource(Res.string.settings_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         SettingsSection(stringResource(Res.string.settings_appearance)) {
-            SettingsDropdown(stringResource(Res.string.settings_language), language, listOf("system" to Res.string.settings_system, "zh" to Res.string.settings_chinese, "en" to Res.string.settings_english)) { language = it; AppPreferences.language = it }
+            SettingsDropdown(stringResource(Res.string.settings_language), language, listOf("system" to Res.string.settings_system, "zh" to Res.string.settings_chinese, "en" to Res.string.settings_english)) { language = it; AppPreferences.language = it; onLanguageChange() }
             Text(stringResource(Res.string.settings_language_restart), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             SettingsDropdown(stringResource(Res.string.settings_font), font, listOf("system" to Res.string.settings_system, "sans" to Res.string.settings_font_sans, "mono" to Res.string.settings_font_mono)) { font = it; AppPreferences.font = it; onFontChange(it) }
             SettingsDropdown(stringResource(Res.string.settings_font_size), fontSize, listOf("small" to Res.string.settings_small, "medium" to Res.string.settings_medium, "large" to Res.string.settings_large)) { fontSize = it; AppPreferences.fontSize = it; onFontSizeChange(it) }
