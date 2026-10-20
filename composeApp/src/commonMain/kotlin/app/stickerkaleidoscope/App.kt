@@ -30,6 +30,7 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import app.stickerkaleidoscope.library.*
+import kotlinx.coroutines.delay
 
 private enum class LibrarySection(val title: StringResource, val filter: LibraryFilter) {
     ALL(Res.string.section_all, LibraryFilter.ALL),
@@ -59,6 +60,12 @@ fun App(controller: LibraryController, titleBar: @Composable () -> Unit = {}) {
     var showProperties by remember { mutableStateOf(true) }
     var showSettings by remember { mutableStateOf(false) }
     var showRestartNotice by remember { mutableStateOf(false) }
+    LaunchedEffect(showRestartNotice) {
+        if (showRestartNotice) {
+            delay(3500)
+            showRestartNotice = false
+        }
+    }
     val visibleCount = listOf(showNavigation, showLibrary, showProperties).count { it }
 
     var fontChoice by remember { mutableStateOf(AppPreferences.font) }
