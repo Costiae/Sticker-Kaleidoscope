@@ -38,9 +38,11 @@ class LibraryController(
     fun favorite(ids: List<String>, value: Boolean) = execute { repository.setFavorites(ids, value) }
     fun trash(ids: List<String>, value: Boolean) = execute { repository.setDeleted(ids, value) }
     fun tags(ids: List<String>, tags: List<String>) = execute { repository.setTags(ids, tags) }
-    fun analyze(ids: List<String>) = execute {
+    fun analyze(ids: List<String>, overwrite: Boolean = false) = execute {
         val analyzer = aiAnalyzer ?: throw LibraryException(LibraryError.STORAGE)
+        val existing = repository.list().associateBy { it.id }
         repository.originals(ids).forEachIndexed { index, file ->
+            if (!overwrite && existing[ids[index]]?.tags?.isNotEmpty() == true) return@forEachIndexed
             val tags = analyzer.analyze(file)
             if (tags.isNotEmpty()) repository.setTags(listOf(ids[index]), tags)
         }

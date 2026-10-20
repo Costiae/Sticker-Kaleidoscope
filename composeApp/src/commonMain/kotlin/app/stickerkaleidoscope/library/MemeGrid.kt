@@ -46,6 +46,7 @@ internal fun MemeGrid(
     var boxEnd by remember { mutableStateOf<Offset?>(null) }
     var menuPosition by remember { mutableStateOf<Offset?>(null) }
     var showTagDialog by remember { mutableStateOf(false) }
+    var showAiDialog by remember { mutableStateOf(false) }
     var batchTags by remember { mutableStateOf("") }
     var boxBase by remember { mutableStateOf(emptySet<String>()) }
     var boxAdditive by remember { mutableStateOf(false) }
@@ -68,13 +69,20 @@ internal fun MemeGrid(
             IconButton(onClick = { showTagDialog = true }, enabled = picked.isNotEmpty() && !controller.state.value.busy) {
                 Icon(Icons.Outlined.Label, stringResource(Res.string.batch_tags), Modifier.size(18.dp))
             }
-            IconButton(onClick = { controller.analyze(selectedIds.toList()) }, enabled = picked.isNotEmpty() && !controller.state.value.busy) {
+            IconButton(onClick = { showAiDialog = true }, enabled = picked.isNotEmpty() && !controller.state.value.busy) {
                 Icon(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_analyze), Modifier.size(18.dp))
             }
             TextButton(onClick = { onSelectionChanged(emptySet(), null) }, enabled = selectedIds.isNotEmpty()) {
                 Text(stringResource(Res.string.clear_selection))
             }
         }
+        if (showAiDialog) AlertDialog(
+            onDismissRequest = { showAiDialog = false },
+            title = { Text(stringResource(Res.string.ai_analyze)) },
+            text = { Text(stringResource(Res.string.ai_mode_hint)) },
+            confirmButton = { TextButton(onClick = { controller.analyze(selectedIds.toList(), true); showAiDialog = false }) { Text(stringResource(Res.string.ai_overwrite)) } },
+            dismissButton = { TextButton(onClick = { controller.analyze(selectedIds.toList(), false); showAiDialog = false }) { Text(stringResource(Res.string.ai_skip_tagged)) } }
+        )
         if (showTagDialog) {
             AlertDialog(
                 onDismissRequest = { showTagDialog = false },
