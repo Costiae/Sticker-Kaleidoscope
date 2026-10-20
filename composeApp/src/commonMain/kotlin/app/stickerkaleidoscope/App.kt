@@ -9,6 +9,8 @@ import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ViewSidebar
 import androidx.compose.material.icons.outlined.*
@@ -52,6 +54,7 @@ fun App(controller: LibraryController, titleBar: @Composable () -> Unit = {}) {
     var showNavigation by remember { mutableStateOf(true) }
     var showLibrary by remember { mutableStateOf(true) }
     var showProperties by remember { mutableStateOf(true) }
+    var showSettings by remember { mutableStateOf(false) }
     val visibleCount = listOf(showNavigation, showLibrary, showProperties).count { it }
 
     MaterialTheme(colorScheme = darkColorScheme(primary = Color(0xFF9DBCA4))) {
@@ -65,6 +68,9 @@ fun App(controller: LibraryController, titleBar: @Composable () -> Unit = {}) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(stringResource(Res.string.layout_title), style = MaterialTheme.typography.labelMedium)
+                    IconButton(onClick = { showSettings = !showSettings }) {
+                        Icon(Icons.Outlined.Settings, stringResource(Res.string.settings_title))
+                    }
                     FilterChip(
                         selected = showNavigation,
                         onClick = { showNavigation = !showNavigation },
@@ -88,7 +94,9 @@ fun App(controller: LibraryController, titleBar: @Composable () -> Unit = {}) {
                     )
                 }
                 HorizontalDivider()
-            BoxWithConstraints(Modifier.weight(1f)) {
+            if (showSettings) {
+                SettingsPage()
+            } else BoxWithConstraints(Modifier.weight(1f)) {
                 // Reserve room for the content when the window shrinks.
                 val budget = (maxWidth.value - (if (showLibrary) 360f else 0f) - (visibleCount - 1) * 8f).coerceAtLeast(0f)
                 val sideCount = listOf(showNavigation, showProperties).count { it }.coerceAtLeast(1)
@@ -132,6 +140,19 @@ fun App(controller: LibraryController, titleBar: @Composable () -> Unit = {}) {
                             }
                         }
                         Spacer(Modifier.weight(1f))
+                        TextButton(
+                            onClick = { showSettings = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.textButtonColors(
+                                containerColor = if (showSettings) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                                contentColor = if (showSettings) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                        ) {
+                            Icon(Icons.Outlined.Settings, null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(10.dp))
+                            Text(stringResource(Res.string.settings_title), modifier = Modifier.weight(1f))
+                        }
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Outlined.CloudOff, null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(8.dp))
@@ -213,6 +234,55 @@ fun App(controller: LibraryController, titleBar: @Composable () -> Unit = {}) {
             }
             }
         }
+        }
+    }
+}
+
+@Composable
+private fun SettingsPage() {
+    var language by remember { mutableStateOf("system") }
+    var font by remember { mutableStateOf("system") }
+    var syncSource by remember { mutableStateOf("") }
+    var provider by remember { mutableStateOf("") }
+    Column(
+        Modifier.fillMaxSize().padding(32.dp).verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
+        Text(stringResource(Res.string.settings_title), style = MaterialTheme.typography.headlineMedium)
+        Text(stringResource(Res.string.settings_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        SettingsSection(stringResource(Res.string.settings_appearance)) {
+            SettingsDropdown(stringResource(Res.string.settings_language), language, listOf("system" to Res.string.settings_system, "zh" to Res.string.settings_chinese, "en" to Res.string.settings_english)) { language = it }
+            SettingsDropdown(stringResource(Res.string.settings_font), font, listOf("system" to Res.string.settings_system, "sans" to Res.string.settings_font_sans, "mono" to Res.string.settings_font_mono)) { font = it }
+        }
+        SettingsSection(stringResource(Res.string.settings_sync)) {
+            OutlinedTextField(syncSource, { syncSource = it }, Modifier.fillMaxWidth(), label = { Text(stringResource(Res.string.settings_sync_source)) }, placeholder = { Text(stringResource(Res.string.settings_sync_source_hint)) }, singleLine = true)
+            Text(stringResource(Res.string.settings_not_connected), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        SettingsSection(stringResource(Res.string.settings_ai)) {
+            OutlinedTextField(provider, { provider = it }, Modifier.fillMaxWidth(), label = { Text(stringResource(Res.string.settings_model_provider)) }, placeholder = { Text(stringResource(Res.string.settings_model_provider_hint)) }, singleLine = true)
+            Text(stringResource(Res.string.settings_future_feature), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun SettingsSection(title: String, content: @Composable ColumnScope.() -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(title, style = MaterialTheme.typography.titleMedium)
+        content()
+    }
+}
+
+@Composable
+private fun SettingsDropdown(label: String, value: String, options: List<Pair<String, StringResource>>, onChange: (String) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        OutlinedButton(onClick = { expanded = true }) {
+            Text("$label: ${stringResource(options.first { it.first == value }.second)}")
+            Icon(Icons.Outlined.ExpandMore, null)
+        }
+        DropdownMenu(expanded, { expanded = false }) {
+            options.forEach { (key, text) -> DropdownMenuItem(text = { Text(stringResource(text)) }, onClick = { onChange(key); expanded = false }) }
         }
     }
 }
