@@ -64,6 +64,7 @@
     <string name="import_files">Import files</string>
     <string name="import_folder">Import folder</string>
     <string name="refresh_library">Refresh library</string>
+    <string name="import_scanning">Scanning folder · %1$d file(s) found…</string>
     <string name="import_preparing">Preparing %1$d file(s)…</string>
     <string name="import_progress">%1$d/%2$d: %3$s</string>
     <string name="import_report">Imported: %1$d · Duplicates: %2$d · Failed: %3$d</string>

@@ -97,12 +97,18 @@ internal fun LibraryProgress(state: LibraryState) {
         val current = state.progressCurrent
         val total = state.progressTotal
         val name = state.progressText
+        val scanned = state.progressScanCount
         if (current != null && total != null && name != null) {
             Text(
                 stringResource(Res.string.import_progress, current, total, name),
                 style = MaterialTheme.typography.bodySmall,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
+            )
+        } else if (scanned != null) {
+            Text(
+                stringResource(Res.string.import_scanning, scanned),
+                style = MaterialTheme.typography.bodySmall
             )
         } else if (current != null && total != null) {
             Text(

@@ -22,7 +22,8 @@ data class LibraryState(
     val progress: Float? = null,
     val progressText: String? = null,
     val progressCurrent: Int? = null,
-    val progressTotal: Int? = null
+    val progressTotal: Int? = null,
+    val progressScanCount: Int? = null
 )
 
 /** UI orchestration only: file, database and image work stay behind platform interfaces. */
@@ -39,7 +40,7 @@ class LibraryController(
     fun refresh() = execute { }
     fun importFiles() = chooseAndImport { picker.chooseFiles() }
     fun importDirectory() = chooseAndImport { picker.chooseDirectory() }
-    fun importPaths(paths: List<String>) = chooseAndImport { picker.expandPaths(paths) }
+    fun importPaths(paths: List<String>) = chooseAndImport { paths }
     fun save(id: String, title: String, tags: List<String>) = execute { repository.update(id, title, tags) }
     fun favorite(meme: Meme) = execute { repository.setFavorite(meme.id, !meme.favorite) }
     fun trash(meme: Meme) = execute { repository.setDeleted(meme.id, !meme.deleted) }
@@ -70,7 +71,10 @@ class LibraryController(
         startBusy()
         return scope.launch {
             try {
-                val paths = choose()
+                val selected = choose()
+                val paths = picker.expandPaths(selected) { count ->
+                    mutableState.update { it.copy(progressScanCount = count) }
+                }
                 if (paths.isNotEmpty()) runOperation { import(paths) }
             } catch (cancelled: CancellationException) {
                 throw cancelled
@@ -93,6 +97,7 @@ class LibraryController(
                     progressText = null,
                     progressCurrent = 0,
                     progressTotal = paths.size,
+                    progressScanCount = null,
                     report = report
                 )
             }
@@ -154,6 +159,7 @@ class LibraryController(
                 progressText = null,
                 progressCurrent = null,
                 progressTotal = null,
+                progressScanCount = 0,
                 error = null,
                 report = null,
                 copiedCount = null
@@ -168,7 +174,8 @@ class LibraryController(
                 progress = null,
                 progressText = null,
                 progressCurrent = null,
-                progressTotal = null
+                progressTotal = null,
+                progressScanCount = null
             )
         }
     }

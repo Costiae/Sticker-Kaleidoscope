@@ -48,5 +48,5 @@ interface LibraryRepository {
 interface ImportPicker {
     suspend fun chooseFiles(): List<String>
     suspend fun chooseDirectory(): List<String>
-    suspend fun expandPaths(paths: List<String>): List<String> = paths
+    suspend fun expandPaths(paths: List<String>, onFileFound: (Int) -> Unit = {}): List<String> = paths
 }
