@@ -19,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.dp
@@ -57,7 +58,12 @@ fun App(controller: LibraryController, titleBar: @Composable () -> Unit = {}) {
     var showSettings by remember { mutableStateOf(false) }
     val visibleCount = listOf(showNavigation, showLibrary, showProperties).count { it }
 
-    MaterialTheme(colorScheme = darkColorScheme(primary = Color(0xFF9DBCA4))) {
+    var fontChoice by remember { mutableStateOf(AppPreferences.font) }
+    val typography = when (fontChoice) {
+        "mono" -> Typography().run { copy(bodyLarge = bodyLarge.copy(fontFamily = FontFamily.Monospace), bodyMedium = bodyMedium.copy(fontFamily = FontFamily.Monospace), labelLarge = labelLarge.copy(fontFamily = FontFamily.Monospace)) }
+        else -> Typography()
+    }
+    MaterialTheme(colorScheme = darkColorScheme(primary = Color(0xFF9DBCA4)), typography = typography) {
         ImportDropHost(controller) {
         Surface(Modifier.fillMaxSize()) {
             Column {
@@ -95,7 +101,7 @@ fun App(controller: LibraryController, titleBar: @Composable () -> Unit = {}) {
                 }
                 HorizontalDivider()
             if (showSettings) {
-                SettingsPage()
+                SettingsPage(onFontChange = { fontChoice = it })
             } else BoxWithConstraints(Modifier.weight(1f)) {
                 // Reserve room for the content when the window shrinks.
                 val budget = (maxWidth.value - (if (showLibrary) 360f else 0f) - (visibleCount - 1) * 8f).coerceAtLeast(0f)
@@ -239,11 +245,11 @@ fun App(controller: LibraryController, titleBar: @Composable () -> Unit = {}) {
 }
 
 @Composable
-private fun SettingsPage() {
-    var language by remember { mutableStateOf("system") }
-    var font by remember { mutableStateOf("system") }
-    var syncSource by remember { mutableStateOf("") }
-    var provider by remember { mutableStateOf("") }
+private fun SettingsPage(onFontChange: (String) -> Unit) {
+    var language by remember { mutableStateOf(AppPreferences.language) }
+    var font by remember { mutableStateOf(AppPreferences.font) }
+    var syncSource by remember { mutableStateOf(AppPreferences.syncSource) }
+    var provider by remember { mutableStateOf(AppPreferences.modelProvider) }
     Column(
         Modifier.fillMaxSize().padding(32.dp).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(20.dp)
@@ -251,15 +257,15 @@ private fun SettingsPage() {
         Text(stringResource(Res.string.settings_title), style = MaterialTheme.typography.headlineMedium)
         Text(stringResource(Res.string.settings_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         SettingsSection(stringResource(Res.string.settings_appearance)) {
-            SettingsDropdown(stringResource(Res.string.settings_language), language, listOf("system" to Res.string.settings_system, "zh" to Res.string.settings_chinese, "en" to Res.string.settings_english)) { language = it }
-            SettingsDropdown(stringResource(Res.string.settings_font), font, listOf("system" to Res.string.settings_system, "sans" to Res.string.settings_font_sans, "mono" to Res.string.settings_font_mono)) { font = it }
+            SettingsDropdown(stringResource(Res.string.settings_language), language, listOf("system" to Res.string.settings_system, "zh" to Res.string.settings_chinese, "en" to Res.string.settings_english)) { language = it; AppPreferences.language = it }
+            SettingsDropdown(stringResource(Res.string.settings_font), font, listOf("system" to Res.string.settings_system, "sans" to Res.string.settings_font_sans, "mono" to Res.string.settings_font_mono)) { font = it; AppPreferences.font = it; onFontChange(it) }
         }
         SettingsSection(stringResource(Res.string.settings_sync)) {
-            OutlinedTextField(syncSource, { syncSource = it }, Modifier.fillMaxWidth(), label = { Text(stringResource(Res.string.settings_sync_source)) }, placeholder = { Text(stringResource(Res.string.settings_sync_source_hint)) }, singleLine = true)
+            OutlinedTextField(syncSource, { syncSource = it; AppPreferences.syncSource = it }, Modifier.fillMaxWidth(), label = { Text(stringResource(Res.string.settings_sync_source)) }, placeholder = { Text(stringResource(Res.string.settings_sync_source_hint)) }, singleLine = true)
             Text(stringResource(Res.string.settings_not_connected), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         SettingsSection(stringResource(Res.string.settings_ai)) {
-            OutlinedTextField(provider, { provider = it }, Modifier.fillMaxWidth(), label = { Text(stringResource(Res.string.settings_model_provider)) }, placeholder = { Text(stringResource(Res.string.settings_model_provider_hint)) }, singleLine = true)
+            OutlinedTextField(provider, { provider = it; AppPreferences.modelProvider = it }, Modifier.fillMaxWidth(), label = { Text(stringResource(Res.string.settings_model_provider)) }, placeholder = { Text(stringResource(Res.string.settings_model_provider_hint)) }, singleLine = true)
             Text(stringResource(Res.string.settings_future_feature), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
