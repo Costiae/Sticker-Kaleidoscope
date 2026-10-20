@@ -4,6 +4,8 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,9 +34,9 @@ class LibraryController(
     val state = mutableState.asStateFlow()
 
     fun refresh() = execute { }
-    fun importFiles() = execute { import(picker.chooseFiles()) }
-    fun importDirectory() = execute { import(picker.chooseDirectory()) }
-    fun importPaths(paths: List<String>) = execute { import(picker.expandPaths(paths)) }
+    fun importFiles() = chooseAndImport { picker.chooseFiles() }
+    fun importDirectory() = chooseAndImport { picker.chooseDirectory() }
+    fun importPaths(paths: List<String>) = chooseAndImport { picker.expandPaths(paths) }
     fun save(id: String, title: String, tags: List<String>) = execute { repository.update(id, title, tags) }
     fun favorite(meme: Meme) = execute { repository.setFavorite(meme.id, !meme.favorite) }
     fun trash(meme: Meme) = execute { repository.setDeleted(meme.id, !meme.deleted) }
@@ -60,6 +62,15 @@ class LibraryController(
     }
     suspend fun thumbnail(id: String) = repository.thumbnail(id)
 
+    private fun chooseAndImport(choose: suspend () -> List<String>): Job? = scope.launch {
+        try {
+            val paths = choose()
+            if (paths.isNotEmpty()) execute { import(paths) }?.join()
+        } catch (_: CancellationException) {
+            throw CancellationException()
+        }
+    }
+
     private suspend fun import(paths: List<String>) {
         if (paths.isNotEmpty()) {
             var report = ImportReport()
@@ -78,9 +89,11 @@ class LibraryController(
         mutableState.update { it.copy(busy = true, progress = null, progressText = null, error = null, report = null, copiedCount = null) }
         return scope.launch {
             try {
-                operation()
+                withContext(Dispatchers.Default) { operation() }
                 if (reload) {
-                    val items = repository.list(filter = LibraryFilter.ALL) + repository.list(filter = LibraryFilter.TRASH)
+                    val items = withContext(Dispatchers.Default) {
+                        repository.list(filter = LibraryFilter.ALL) + repository.list(filter = LibraryFilter.TRASH)
+                    }
                     mutableState.update { it.copy(items = items, loaded = true) }
                 }
             } catch (cancelled: CancellationException) {
