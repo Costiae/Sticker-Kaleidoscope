@@ -14,4 +14,13 @@ actual object AiProvider {
         if (response.statusCode() !in 200..299) error("HTTP ${response.statusCode()}")
         "HTTP ${response.statusCode()}"
     }
+    actual suspend fun models(config: AiProviderConfig): Result<List<String>> = runCatching {
+        val endpoint = config.url.trimEnd('/') + "/models"
+        val builder = HttpRequest.newBuilder(URI(endpoint)).GET().header("Accept", "application/json")
+        if (config.apiKey.isNotBlank()) builder.header("Authorization", "Bearer ${config.apiKey}")
+        val body = HttpClient.newHttpClient().send(builder.build(), HttpResponse.BodyHandlers.ofString()).let {
+            if (it.statusCode() !in 200..299) error("HTTP ${it.statusCode()}") else it.body()
+        }
+        Regex("\\\"id\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"").findAll(body).map { it.groupValues[1] }.distinct().toList()
+    }
 }

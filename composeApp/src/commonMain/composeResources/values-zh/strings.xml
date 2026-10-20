@@ -40,6 +40,7 @@
     <string name="settings_not_connected">尚未连接同步源。</string>
     <string name="settings_ai">AI 分析</string>
     <string name="settings_provider_url">接口地址</string>
+    <string name="settings_fetch_models">获取模型</string>
     <string name="settings_provider_model">模型</string>
     <string name="settings_provider_key">API Key</string>
     <string name="settings_test_provider">测试连接</string>

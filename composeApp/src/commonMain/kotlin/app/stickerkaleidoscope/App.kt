@@ -289,6 +289,8 @@ private fun SettingsPage(onLanguageChange: () -> Unit, onFontChange: (String) ->
     var providerModel by remember { mutableStateOf(AppPreferences.providerModel) }
     var providerKey by remember { mutableStateOf(AppPreferences.providerApiKey) }
     var providerStatus by remember { mutableStateOf<String?>(null) }
+    var providerModels by remember { mutableStateOf(emptyList<String>()) }
+    var modelsExpanded by remember { mutableStateOf(false) }
     val providerScope = rememberCoroutineScope()
     Column(
         Modifier.fillMaxSize().padding(32.dp).verticalScroll(rememberScrollState()),
@@ -309,7 +311,14 @@ private fun SettingsPage(onLanguageChange: () -> Unit, onFontChange: (String) ->
         }
         SettingsSection(stringResource(Res.string.settings_ai)) {
             OutlinedTextField(providerUrl, { providerUrl = it; AppPreferences.providerUrl = it }, Modifier.fillMaxWidth(), label = { Text(stringResource(Res.string.settings_provider_url)) }, singleLine = true)
-            OutlinedTextField(providerModel, { providerModel = it; AppPreferences.providerModel = it }, Modifier.fillMaxWidth(), label = { Text(stringResource(Res.string.settings_provider_model)) }, singleLine = true)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                OutlinedTextField(providerModel, { providerModel = it; AppPreferences.providerModel = it }, Modifier.weight(1f), label = { Text(stringResource(Res.string.settings_provider_model)) }, singleLine = true)
+                Spacer(Modifier.width(8.dp))
+                Button(onClick = { providerScope.launch { providerStatus = null; AiProvider.models(AiProviderConfig(providerUrl, providerModel, providerKey)).fold({ providerModels = it; modelsExpanded = it.isNotEmpty(); providerStatus = "${it.size}" }, { providerStatus = it.message ?: "Failed" }) } }) { Text(stringResource(Res.string.settings_fetch_models)) }
+            }
+            DropdownMenu(expanded = modelsExpanded, onDismissRequest = { modelsExpanded = false }) {
+                providerModels.forEach { model -> DropdownMenuItem(text = { Text(model) }, onClick = { providerModel = model; AppPreferences.providerModel = model; modelsExpanded = false }) }
+            }
             OutlinedTextField(providerKey, { providerKey = it; AppPreferences.providerApiKey = it }, Modifier.fillMaxWidth(), label = { Text(stringResource(Res.string.settings_provider_key)) }, singleLine = true)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Button(onClick = { providerScope.launch { providerStatus = AiProvider.test(AiProviderConfig(providerUrl, providerModel, providerKey)).fold({ it }, { it.message ?: "Failed" }) } }) { Text(stringResource(Res.string.settings_test_provider)) }

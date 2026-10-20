@@ -4,4 +4,5 @@ data class AiProviderConfig(val url: String, val model: String, val apiKey: Stri
 
 expect object AiProvider {
     suspend fun test(config: AiProviderConfig): Result<String>
+    suspend fun models(config: AiProviderConfig): Result<List<String>>
 }
