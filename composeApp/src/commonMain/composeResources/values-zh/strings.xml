@@ -1,4 +1,8 @@
 <resources>
+    <string name="window_minimize">最小化</string>
+    <string name="window_maximize">最大化</string>
+    <string name="window_restore">还原窗口</string>
+    <string name="window_close">关闭窗口</string>
     <string name="copy_to_clipboard">复制到剪贴板</string>
     <string name="copied_report">已复制 %1$d 项到剪贴板。</string>
     <string name="error_clipboard">复制失败，剪贴板可能正被占用，请重试。</string>

@@ -34,7 +34,7 @@ private enum class LibrarySection(val title: StringResource, val filter: Library
 }
 
 @Composable
-fun App(controller: LibraryController) {
+fun App(controller: LibraryController, titleBar: @Composable () -> Unit = {}) {
     val library by controller.state.collectAsState()
     LaunchedEffect(controller) { controller.refresh() }
     var query by remember { mutableStateOf("") }
@@ -58,6 +58,7 @@ fun App(controller: LibraryController) {
         ImportDropHost(controller) {
         Surface(Modifier.fillMaxSize()) {
             Column {
+                titleBar()
                 Row(
                     Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),

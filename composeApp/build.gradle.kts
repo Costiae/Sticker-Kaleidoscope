@@ -58,6 +58,9 @@ compose.desktop {
             packageName = "Sticker Kaleidoscope"
             packageVersion = "0.1.0"
             modules("java.sql", "java.naming", "jdk.unsupported")
+            windows {
+                iconFile.set(project.file("src/desktopMain/resources/app-icon.ico"))
+            }
         }
     }
 }

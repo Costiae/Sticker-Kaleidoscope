@@ -1,4 +1,8 @@
 <resources>
+    <string name="window_minimize">Minimize</string>
+    <string name="window_maximize">Maximize</string>
+    <string name="window_restore">Restore window</string>
+    <string name="window_close">Close window</string>
     <string name="copy_to_clipboard">Copy to clipboard</string>
     <string name="copied_report">Copied %1$d item(s) to clipboard.</string>
     <string name="error_clipboard">Could not copy. The clipboard may be busy; please retry.</string>
