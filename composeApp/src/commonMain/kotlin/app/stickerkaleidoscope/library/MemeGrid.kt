@@ -68,6 +68,9 @@ internal fun MemeGrid(
             IconButton(onClick = { showTagDialog = true }, enabled = picked.isNotEmpty() && !controller.state.value.busy) {
                 Icon(Icons.Outlined.Label, stringResource(Res.string.batch_tags), Modifier.size(18.dp))
             }
+            IconButton(onClick = { controller.analyze(selectedIds.toList()) }, enabled = picked.isNotEmpty() && !controller.state.value.busy) {
+                Icon(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_analyze), Modifier.size(18.dp))
+            }
             TextButton(onClick = { onSelectionChanged(emptySet(), null) }, enabled = selectedIds.isNotEmpty()) {
                 Text(stringResource(Res.string.clear_selection))
             }

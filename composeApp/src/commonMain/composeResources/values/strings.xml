@@ -76,6 +76,7 @@
     <string name="trash_hint">Deleted memes can be restored here. Originals are retained.</string>
     <string name="image_metadata">%1$s · %2$d × %3$d · %4$d bytes</string>
     <string name="meme_title">Title</string>
+    <string name="ai_analyze">Analyze with AI</string>
     <string name="batch_tags">Batch tags</string>
     <string name="batch_tags_hint">Replace tags for selected memes</string>
     <string name="meme_tags">Tags</string>

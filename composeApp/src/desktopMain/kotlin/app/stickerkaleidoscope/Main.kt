@@ -34,7 +34,7 @@ fun main() = application {
         window.minimumSize = Dimension(960, 600)
         val scope = rememberCoroutineScope()
         val controller = remember(scope) {
-            LibraryController(DesktopLibraryRepository(DesktopLibraryRepository.defaultRoot()), DesktopImportPicker(), scope, DesktopLibraryClipboard())
+            LibraryController(DesktopLibraryRepository(DesktopLibraryRepository.defaultRoot()), DesktopImportPicker(), scope, DesktopLibraryClipboard(), DesktopAiAnalyzer())
         }
         App(controller) { DesktopTitleBar(state, ::exitApplication) }
     }

@@ -22,7 +22,8 @@ class LibraryController(
     private val repository: LibraryRepository,
     private val picker: ImportPicker,
     private val scope: CoroutineScope,
-    private val clipboard: LibraryClipboard? = null
+    private val clipboard: LibraryClipboard? = null,
+    private val aiAnalyzer: AiAnalyzer? = null
 ) {
     private val mutableState = MutableStateFlow(LibraryState())
     val state = mutableState.asStateFlow()
@@ -37,6 +38,13 @@ class LibraryController(
     fun favorite(ids: List<String>, value: Boolean) = execute { repository.setFavorites(ids, value) }
     fun trash(ids: List<String>, value: Boolean) = execute { repository.setDeleted(ids, value) }
     fun tags(ids: List<String>, tags: List<String>) = execute { repository.setTags(ids, tags) }
+    fun analyze(ids: List<String>) = execute {
+        val analyzer = aiAnalyzer ?: throw LibraryException(LibraryError.STORAGE)
+        repository.originals(ids).forEachIndexed { index, file ->
+            val tags = analyzer.analyze(file)
+            if (tags.isNotEmpty()) repository.setTags(listOf(ids[index]), tags)
+        }
+    }
     fun copy(ids: List<String>) = execute(reload = false) {
         val files = repository.originals(ids)
         if (files.isNotEmpty()) {

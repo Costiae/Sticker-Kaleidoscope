@@ -28,6 +28,10 @@ interface LibraryClipboard {
     suspend fun copy(files: List<OriginalFile>)
 }
 
+interface AiAnalyzer {
+    suspend fun analyze(file: OriginalFile): List<String>
+}
+
 interface LibraryRepository {
     suspend fun list(query: String = "", filter: LibraryFilter = LibraryFilter.ALL): List<Meme>
     suspend fun importFiles(paths: List<String>): ImportReport
