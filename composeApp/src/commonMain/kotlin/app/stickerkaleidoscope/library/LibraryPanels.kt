@@ -52,7 +52,13 @@ internal fun LibraryActions(controller: LibraryController, state: LibraryState) 
     if (state.busy) {
         val progress = state.progress
         if (progress == null) LinearProgressIndicator(Modifier.fillMaxWidth())
-        else LinearProgressIndicator({ progress }, Modifier.fillMaxWidth())
+        else {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                LinearProgressIndicator({ progress }, Modifier.weight(1f))
+                Spacer(Modifier.width(8.dp))
+                Text("${(progress * 100).toInt()}%", style = MaterialTheme.typography.labelSmall)
+            }
+        }
     }
     state.copiedCount?.let { count ->
         Text(stringResource(Res.string.copied_report, count), style = MaterialTheme.typography.bodySmall)
