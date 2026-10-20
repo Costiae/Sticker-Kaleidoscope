@@ -40,6 +40,10 @@
     <string name="settings_sync_source_hint">WebDAV, server URL or local folder (coming soon)</string>
     <string name="settings_not_connected">No synchronization source is connected yet.</string>
     <string name="settings_ai">AI analysis</string>
+    <string name="settings_provider_url">Base URL</string>
+    <string name="settings_provider_model">Model</string>
+    <string name="settings_provider_key">API key</string>
+    <string name="settings_test_provider">Test connection</string>
     <string name="settings_model_provider">Model Provider</string>
     <string name="settings_model_provider_hint">OpenAI-compatible, Ollama or other provider (coming soon)</string>
     <string name="settings_future_feature">Provider configuration and AI jobs will be enabled in a future release.</string>

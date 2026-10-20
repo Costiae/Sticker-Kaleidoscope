@@ -7,4 +7,7 @@ expect object AppPreferences {
     var fontWeight: String
     var syncSource: String
     var modelProvider: String
+    var providerUrl: String
+    var providerModel: String
+    var providerApiKey: String
 }

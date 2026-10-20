@@ -22,4 +22,13 @@ actual object AppPreferences {
     actual var modelProvider: String
         get() = store.get("modelProvider", "")
         set(value) = store.put("modelProvider", value)
+    actual var providerUrl: String
+        get() = store.get("providerUrl", "http://localhost:11434/v1")
+        set(value) = store.put("providerUrl", value)
+    actual var providerModel: String
+        get() = store.get("providerModel", "")
+        set(value) = store.put("providerModel", value)
+    actual var providerApiKey: String
+        get() = store.get("providerApiKey", "")
+        set(value) = store.put("providerApiKey", value)
 }

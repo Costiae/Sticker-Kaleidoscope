@@ -31,6 +31,7 @@ import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import app.stickerkaleidoscope.library.*
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 private enum class LibrarySection(val title: StringResource, val filter: LibraryFilter) {
     ALL(Res.string.section_all, LibraryFilter.ALL),
@@ -284,6 +285,11 @@ private fun SettingsPage(onLanguageChange: () -> Unit, onFontChange: (String) ->
     var fontWeight by remember { mutableStateOf(AppPreferences.fontWeight) }
     var syncSource by remember { mutableStateOf(AppPreferences.syncSource) }
     var provider by remember { mutableStateOf(AppPreferences.modelProvider) }
+    var providerUrl by remember { mutableStateOf(AppPreferences.providerUrl) }
+    var providerModel by remember { mutableStateOf(AppPreferences.providerModel) }
+    var providerKey by remember { mutableStateOf(AppPreferences.providerApiKey) }
+    var providerStatus by remember { mutableStateOf<String?>(null) }
+    val providerScope = rememberCoroutineScope()
     Column(
         Modifier.fillMaxSize().padding(32.dp).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(20.dp)
@@ -302,7 +308,13 @@ private fun SettingsPage(onLanguageChange: () -> Unit, onFontChange: (String) ->
             Text(stringResource(Res.string.settings_not_connected), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         SettingsSection(stringResource(Res.string.settings_ai)) {
-            OutlinedTextField(provider, { provider = it; AppPreferences.modelProvider = it }, Modifier.fillMaxWidth(), label = { Text(stringResource(Res.string.settings_model_provider)) }, placeholder = { Text(stringResource(Res.string.settings_model_provider_hint)) }, singleLine = true)
+            OutlinedTextField(providerUrl, { providerUrl = it; AppPreferences.providerUrl = it }, Modifier.fillMaxWidth(), label = { Text(stringResource(Res.string.settings_provider_url)) }, singleLine = true)
+            OutlinedTextField(providerModel, { providerModel = it; AppPreferences.providerModel = it }, Modifier.fillMaxWidth(), label = { Text(stringResource(Res.string.settings_provider_model)) }, singleLine = true)
+            OutlinedTextField(providerKey, { providerKey = it; AppPreferences.providerApiKey = it }, Modifier.fillMaxWidth(), label = { Text(stringResource(Res.string.settings_provider_key)) }, singleLine = true)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Button(onClick = { providerScope.launch { providerStatus = AiProvider.test(AiProviderConfig(providerUrl, providerModel, providerKey)).fold({ it }, { it.message ?: "Failed" }) } }) { Text(stringResource(Res.string.settings_test_provider)) }
+                if (providerStatus != null) { Spacer(Modifier.width(12.dp)); Text(providerStatus!!, style = MaterialTheme.typography.bodySmall) }
+            }
             Text(stringResource(Res.string.settings_future_feature), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
