@@ -29,6 +29,7 @@ kotlin {
                 implementation(compose.desktop.currentOs)
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.10.2")
                 implementation("io.ktor:ktor-client-cio:$ktorVersion")
+                implementation("net.java.dev.jna:jna-platform:5.16.0")
                 implementation("org.xerial:sqlite-jdbc:3.49.1.0")
                 implementation("org.slf4j:slf4j-nop:2.0.17")
                 implementation("com.twelvemonkeys.imageio:imageio-webp:3.12.0")

@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ViewSidebar
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -319,7 +320,7 @@ private fun SettingsPage(onLanguageChange: () -> Unit, onFontChange: (String) ->
             DropdownMenu(expanded = modelsExpanded, onDismissRequest = { modelsExpanded = false }) {
                 providerModels.forEach { model -> DropdownMenuItem(text = { Text(model) }, onClick = { providerModel = model; AppPreferences.providerModel = model; modelsExpanded = false }) }
             }
-            OutlinedTextField(providerKey, { providerKey = it; AppPreferences.providerApiKey = it }, Modifier.fillMaxWidth(), label = { Text(stringResource(Res.string.settings_provider_key)) }, singleLine = true)
+            OutlinedTextField(providerKey, { providerKey = it; AppPreferences.providerApiKey = it }, Modifier.fillMaxWidth(), label = { Text(stringResource(Res.string.settings_provider_key)) }, visualTransformation = PasswordVisualTransformation(), singleLine = true)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Button(onClick = { providerScope.launch { providerStatus = AiProvider.test(AiProviderConfig(providerUrl, providerModel, providerKey)).fold({ it }, { it.message ?: "Failed" }) } }) { Text(stringResource(Res.string.settings_test_provider)) }
                 if (providerStatus != null) { Spacer(Modifier.width(12.dp)); Text(providerStatus!!, style = MaterialTheme.typography.bodySmall) }

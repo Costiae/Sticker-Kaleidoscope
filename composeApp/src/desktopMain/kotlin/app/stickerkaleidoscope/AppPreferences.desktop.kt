@@ -1,6 +1,8 @@
 package app.stickerkaleidoscope
 
 import java.util.prefs.Preferences
+import com.sun.jna.platform.win32.Crypt32Util
+import java.util.Base64
 
 actual object AppPreferences {
     private val store = Preferences.userRoot().node("app/stickerkaleidoscope")
@@ -29,6 +31,14 @@ actual object AppPreferences {
         get() = store.get("providerModel", "")
         set(value) = store.put("providerModel", value)
     actual var providerApiKey: String
-        get() = store.get("providerApiKey", "")
-        set(value) = store.put("providerApiKey", value)
+        get() {
+            val value = store.get("providerApiKey", "")
+            if (value.isBlank()) return ""
+            return runCatching { String(Crypt32Util.cryptUnprotectData(Base64.getDecoder().decode(value)), Charsets.UTF_8) }
+                .getOrElse { value }
+        }
+        set(value) {
+            if (value.isBlank()) store.remove("providerApiKey")
+            else store.put("providerApiKey", Base64.getEncoder().encodeToString(Crypt32Util.cryptProtectData(value.toByteArray(Charsets.UTF_8))))
+        }
 }
