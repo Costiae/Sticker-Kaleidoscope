@@ -50,10 +50,33 @@ class LibraryController(
     fun analyze(ids: List<String>, overwrite: Boolean = false) = execute {
         val analyzer = aiAnalyzer ?: throw LibraryException(LibraryError.STORAGE)
         val existing = repository.list().associateBy { it.id }
-        repository.originals(ids).forEachIndexed { index, file ->
-            if (!overwrite && existing[ids[index]]?.tags?.isNotEmpty() == true) return@forEachIndexed
-            val tags = analyzer.analyze(file)
-            if (tags.isNotEmpty()) repository.setTags(listOf(ids[index]), tags)
+        val files = repository.originals(ids)
+        mutableState.update {
+            it.copy(
+                progress = 0f,
+                progressText = null,
+                progressCurrent = 0,
+                progressTotal = files.size,
+                progressScanCount = null
+            )
+        }
+        files.forEachIndexed { index, file ->
+            val id = ids[index]
+            if (overwrite || existing[id]?.tags?.isNullOrEmpty() != false) {
+                val tags = analyzer.analyze(file)
+                if (tags.isNotEmpty()) repository.setTags(listOf(id), tags)
+            }
+            val displayName = file.path.substringAfterLast('/').substringAfterLast('\\')
+            mutableState.update {
+                it.copy(
+                    progress = (index + 1).toFloat() / files.size.coerceAtLeast(1),
+                    progressText = displayName,
+                    progressCurrent = index + 1,
+                    progressTotal = files.size
+                )
+            }
+            delay(16)
+            yield()
         }
     }
     fun copy(ids: List<String>) = execute(reload = false) {
