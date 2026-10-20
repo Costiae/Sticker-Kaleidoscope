@@ -65,12 +65,22 @@ class LibraryController(
     }
     suspend fun thumbnail(id: String) = repository.thumbnail(id)
 
-    private fun chooseAndImport(choose: suspend () -> List<String>): Job? = scope.launch {
-        try {
-            val paths = choose()
-            if (paths.isNotEmpty()) execute { import(paths) }?.join()
-        } catch (_: CancellationException) {
-            throw CancellationException()
+    private fun chooseAndImport(choose: suspend () -> List<String>): Job? {
+        if (mutableState.value.busy) return null
+        startBusy()
+        return scope.launch {
+            try {
+                val paths = choose()
+                if (paths.isNotEmpty()) runOperation { import(paths) }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (failure: LibraryException) {
+                mutableState.update { it.copy(error = failure.reason) }
+            } catch (_: Exception) {
+                mutableState.update { it.copy(error = LibraryError.STORAGE) }
+            } finally {
+                finishBusy()
+            }
         }
     }
 
@@ -110,6 +120,33 @@ class LibraryController(
 
     private fun execute(reload: Boolean = true, operation: suspend () -> Unit): Job? {
         if (mutableState.value.busy) return null
+        startBusy()
+        return scope.launch {
+            try {
+                runOperation(reload, operation)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (failure: LibraryException) {
+                mutableState.update { it.copy(error = failure.reason) }
+            } catch (_: Exception) {
+                mutableState.update { it.copy(error = LibraryError.STORAGE) }
+            } finally {
+                finishBusy()
+            }
+        }
+    }
+
+    private suspend fun runOperation(reload: Boolean = true, operation: suspend () -> Unit) {
+        withContext(Dispatchers.Default) { operation() }
+        if (reload) {
+            val items = withContext(Dispatchers.Default) {
+                repository.list(filter = LibraryFilter.ALL) + repository.list(filter = LibraryFilter.TRASH)
+            }
+            mutableState.update { it.copy(items = items, loaded = true) }
+        }
+    }
+
+    private fun startBusy() {
         mutableState.update {
             it.copy(
                 busy = true,
@@ -122,32 +159,17 @@ class LibraryController(
                 copiedCount = null
             )
         }
-        return scope.launch {
-            try {
-                withContext(Dispatchers.Default) { operation() }
-                if (reload) {
-                    val items = withContext(Dispatchers.Default) {
-                        repository.list(filter = LibraryFilter.ALL) + repository.list(filter = LibraryFilter.TRASH)
-                    }
-                    mutableState.update { it.copy(items = items, loaded = true) }
-                }
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (failure: LibraryException) {
-                mutableState.update { it.copy(error = failure.reason) }
-            } catch (_: Exception) {
-                mutableState.update { it.copy(error = LibraryError.STORAGE) }
-            } finally {
-                mutableState.update {
-                    it.copy(
-                        busy = false,
-                        progress = null,
-                        progressText = null,
-                        progressCurrent = null,
-                        progressTotal = null
-                    )
-                }
-            }
+    }
+
+    private fun finishBusy() {
+        mutableState.update {
+            it.copy(
+                busy = false,
+                progress = null,
+                progressText = null,
+                progressCurrent = null,
+                progressTotal = null
+            )
         }
     }
 }
