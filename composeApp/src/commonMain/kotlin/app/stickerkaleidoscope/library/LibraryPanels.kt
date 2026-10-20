@@ -49,33 +49,6 @@ internal fun LibraryActions(controller: LibraryController, state: LibraryState) 
         }
     }
     Column(Modifier.fillMaxWidth().heightIn(min = 24.dp)) {
-    if (state.busy) {
-        val progress = state.progress
-        if (progress == null) LinearProgressIndicator(Modifier.fillMaxWidth())
-        else {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                LinearProgressIndicator({ progress }, Modifier.weight(1f))
-                Spacer(Modifier.width(8.dp))
-                Text("${(progress * 100).toInt()}%", style = MaterialTheme.typography.labelSmall)
-            }
-        }
-        val current = state.progressCurrent
-        val total = state.progressTotal
-        val name = state.progressText
-        if (current != null && total != null && name != null) {
-            Text(
-                stringResource(Res.string.import_progress, current, total, name),
-                style = MaterialTheme.typography.bodySmall,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        } else if (current != null && total != null) {
-            Text(
-                stringResource(Res.string.import_preparing, total),
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-    }
     state.copiedCount?.let { count ->
         Text(stringResource(Res.string.copied_report, count), style = MaterialTheme.typography.bodySmall)
     }
@@ -102,6 +75,41 @@ internal fun LibraryActions(controller: LibraryController, state: LibraryState) 
             }
         }
     }
+    }
+}
+
+@Composable
+internal fun LibraryProgress(state: LibraryState) {
+    if (!state.busy) return
+    Column(
+        Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        val progress = state.progress
+        if (progress == null) LinearProgressIndicator(Modifier.fillMaxWidth())
+        else {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                LinearProgressIndicator({ progress }, Modifier.weight(1f))
+                Spacer(Modifier.width(8.dp))
+                Text("${(progress * 100).toInt()}%", style = MaterialTheme.typography.labelSmall)
+            }
+        }
+        val current = state.progressCurrent
+        val total = state.progressTotal
+        val name = state.progressText
+        if (current != null && total != null && name != null) {
+            Text(
+                stringResource(Res.string.import_progress, current, total, name),
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        } else if (current != null && total != null) {
+            Text(
+                stringResource(Res.string.import_preparing, total),
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
     }
 }
 

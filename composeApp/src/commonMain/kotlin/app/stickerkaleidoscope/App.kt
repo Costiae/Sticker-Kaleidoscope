@@ -88,6 +88,7 @@ fun App(controller: LibraryController, titleBar: @Composable () -> Unit = {}) {
         Surface(Modifier.fillMaxSize()) {
             Column {
                 titleBar()
+                LibraryProgress(library)
                 if (showRestartNotice) {
                     Surface(
                         color = MaterialTheme.colorScheme.tertiaryContainer,
