@@ -59,7 +59,22 @@ internal fun LibraryActions(controller: LibraryController, state: LibraryState) 
                 Text("${(progress * 100).toInt()}%", style = MaterialTheme.typography.labelSmall)
             }
         }
-        state.progressText?.let { Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+        val current = state.progressCurrent
+        val total = state.progressTotal
+        val name = state.progressText
+        if (current != null && total != null && name != null) {
+            Text(
+                stringResource(Res.string.import_progress, current, total, name),
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        } else if (current != null && total != null) {
+            Text(
+                stringResource(Res.string.import_preparing, total),
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
     }
     state.copiedCount?.let { count ->
         Text(stringResource(Res.string.copied_report, count), style = MaterialTheme.typography.bodySmall)

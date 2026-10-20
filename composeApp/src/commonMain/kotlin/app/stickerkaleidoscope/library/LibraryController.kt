@@ -3,6 +3,7 @@ package app.stickerkaleidoscope.library
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,7 +20,9 @@ data class LibraryState(
     val report: ImportReport? = null,
     val copiedCount: Int? = null,
     val progress: Float? = null,
-    val progressText: String? = null
+    val progressText: String? = null,
+    val progressCurrent: Int? = null,
+    val progressTotal: Int? = null
 )
 
 /** UI orchestration only: file, database and image work stay behind platform interfaces. */
@@ -74,11 +77,32 @@ class LibraryController(
     private suspend fun import(paths: List<String>) {
         if (paths.isNotEmpty()) {
             var report = ImportReport()
+            mutableState.update {
+                it.copy(
+                    progress = 0f,
+                    progressText = null,
+                    progressCurrent = 0,
+                    progressTotal = paths.size,
+                    report = report
+                )
+            }
+            // Give Compose a frame to render determinate progress before the first file is decoded.
+            delay(32)
             paths.forEachIndexed { index, path ->
                 val next = repository.importFiles(listOf(path))
                 report = ImportReport(report.imported + next.imported, report.duplicates + next.duplicates, report.failures + next.failures)
                 val displayName = path.substringAfterLast('/').substringAfterLast('/')
-                mutableState.update { it.copy(progress = (index + 1).toFloat() / paths.size, progressText = "${index + 1}/${paths.size}: $displayName", report = report) }
+                mutableState.update {
+                    it.copy(
+                        progress = (index + 1).toFloat() / paths.size,
+                        progressText = displayName,
+                        progressCurrent = index + 1,
+                        progressTotal = paths.size,
+                        report = report
+                    )
+                }
+                // Keep very fast duplicate imports observable instead of replacing 0% with completion in one frame.
+                delay(16)
                 yield()
             }
         }
@@ -86,7 +110,18 @@ class LibraryController(
 
     private fun execute(reload: Boolean = true, operation: suspend () -> Unit): Job? {
         if (mutableState.value.busy) return null
-        mutableState.update { it.copy(busy = true, progress = null, progressText = null, error = null, report = null, copiedCount = null) }
+        mutableState.update {
+            it.copy(
+                busy = true,
+                progress = null,
+                progressText = null,
+                progressCurrent = null,
+                progressTotal = null,
+                error = null,
+                report = null,
+                copiedCount = null
+            )
+        }
         return scope.launch {
             try {
                 withContext(Dispatchers.Default) { operation() }
@@ -103,7 +138,15 @@ class LibraryController(
             } catch (_: Exception) {
                 mutableState.update { it.copy(error = LibraryError.STORAGE) }
             } finally {
-                mutableState.update { it.copy(busy = false, progress = null, progressText = null) }
+                mutableState.update {
+                    it.copy(
+                        busy = false,
+                        progress = null,
+                        progressText = null,
+                        progressCurrent = null,
+                        progressTotal = null
+                    )
+                }
             }
         }
     }
