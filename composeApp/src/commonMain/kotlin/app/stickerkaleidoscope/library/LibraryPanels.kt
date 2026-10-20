@@ -49,7 +49,11 @@ internal fun LibraryActions(controller: LibraryController, state: LibraryState) 
         }
     }
     Column(Modifier.fillMaxWidth().heightIn(min = 24.dp)) {
-    if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
+    if (state.busy) {
+        val progress = state.progress
+        if (progress == null) LinearProgressIndicator(Modifier.fillMaxWidth())
+        else LinearProgressIndicator({ progress }, Modifier.fillMaxWidth())
+    }
     state.copiedCount?.let { count ->
         Text(stringResource(Res.string.copied_report, count), style = MaterialTheme.typography.bodySmall)
     }
