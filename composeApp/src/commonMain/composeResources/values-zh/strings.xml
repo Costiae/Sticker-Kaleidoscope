@@ -70,6 +70,8 @@
     <string name="trash_hint">删除的表情可在这里恢复，原图会保留。</string>
     <string name="image_metadata">%1$s · %2$d × %3$d · %4$d 字节</string>
     <string name="meme_title">标题</string>
+    <string name="batch_tags">批量标签</string>
+    <string name="batch_tags_hint">替换选中表情的标签</string>
     <string name="meme_tags">标签</string>
     <string name="tags_hint">用逗号或换行分隔标签，未打标签的表情归入「未分类」。</string>
     <string name="save_changes">保存修改</string>

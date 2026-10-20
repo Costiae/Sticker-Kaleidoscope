@@ -71,6 +71,8 @@
     <string name="trash_hint">Deleted memes can be restored here. Originals are retained.</string>
     <string name="image_metadata">%1$s · %2$d × %3$d · %4$d bytes</string>
     <string name="meme_title">Title</string>
+    <string name="batch_tags">Batch tags</string>
+    <string name="batch_tags_hint">Replace tags for selected memes</string>
     <string name="meme_tags">Tags</string>
     <string name="tags_hint">Separate tags with commas or line breaks. Untagged memes appear in Uncategorized.</string>
     <string name="save_changes">Save changes</string>

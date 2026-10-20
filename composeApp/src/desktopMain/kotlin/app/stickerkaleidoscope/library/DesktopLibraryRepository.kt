@@ -252,6 +252,17 @@ class DesktopLibraryRepository(private val root: Path) : LibraryRepository {
     override suspend fun setDeleted(id: String, deleted: Boolean) = setDeleted(listOf(id), deleted)
     override suspend fun setFavorites(ids: List<String>, favorite: Boolean) = setFlag(ids, "favorite", favorite, "updated")
     override suspend fun setDeleted(ids: List<String>, deleted: Boolean) = setFlag(ids, "deleted", deleted, if (deleted) "deleted" else "restored")
+    override suspend fun setTags(ids: List<String>, tags: List<String>) = database { db ->
+        val normalized = tags.map { it.trim().take(80) }.filter { it.isNotEmpty() }.distinct().take(50)
+        transaction(db) {
+            ids.distinct().forEach { id ->
+                db.prepareStatement("DELETE FROM meme_tags WHERE meme_id=?").use { it.setString(1, id); it.executeUpdate() }
+                db.prepareStatement("INSERT INTO meme_tags(meme_id,tag) VALUES(?,?)").use { st -> normalized.forEach { tag -> st.setString(1,id); st.setString(2,tag); st.addBatch() }; st.executeBatch() }
+                db.prepareStatement("UPDATE memes SET updated_at=?, revision=revision+1 WHERE id=?").use { it.setLong(1,System.currentTimeMillis()); it.setString(2,id); it.executeUpdate() }
+                recordChange(db, id, "updated")
+            }
+        }
+    }
 
     private suspend fun setFlag(ids: List<String>, column: String, value: Boolean, operation: String) = database { db ->
         transaction(db) {

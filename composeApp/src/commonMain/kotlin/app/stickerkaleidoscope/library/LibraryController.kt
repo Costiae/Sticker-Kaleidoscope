@@ -36,6 +36,7 @@ class LibraryController(
     fun trash(meme: Meme) = execute { repository.setDeleted(meme.id, !meme.deleted) }
     fun favorite(ids: List<String>, value: Boolean) = execute { repository.setFavorites(ids, value) }
     fun trash(ids: List<String>, value: Boolean) = execute { repository.setDeleted(ids, value) }
+    fun tags(ids: List<String>, tags: List<String>) = execute { repository.setTags(ids, tags) }
     fun copy(ids: List<String>) = execute(reload = false) {
         val files = repository.originals(ids)
         if (files.isNotEmpty()) {

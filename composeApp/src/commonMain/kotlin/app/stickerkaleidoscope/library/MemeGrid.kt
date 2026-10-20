@@ -45,6 +45,8 @@ internal fun MemeGrid(
     var boxStart by remember { mutableStateOf<Offset?>(null) }
     var boxEnd by remember { mutableStateOf<Offset?>(null) }
     var menuPosition by remember { mutableStateOf<Offset?>(null) }
+    var showTagDialog by remember { mutableStateOf(false) }
+    var batchTags by remember { mutableStateOf("") }
     var boxBase by remember { mutableStateOf(emptySet<String>()) }
     var boxAdditive by remember { mutableStateOf(false) }
     val orderedIds = remember(items) { items.map { it.id } }
@@ -63,9 +65,21 @@ internal fun MemeGrid(
             IconButton(onClick = { controller.copy(selectedIds.toList()) }, enabled = picked.isNotEmpty() && !controller.state.value.busy) {
                 Icon(Icons.Outlined.ContentCopy, copyLabel, Modifier.size(18.dp))
             }
+            IconButton(onClick = { showTagDialog = true }, enabled = picked.isNotEmpty() && !controller.state.value.busy) {
+                Icon(Icons.Outlined.Label, stringResource(Res.string.batch_tags), Modifier.size(18.dp))
+            }
             TextButton(onClick = { onSelectionChanged(emptySet(), null) }, enabled = selectedIds.isNotEmpty()) {
                 Text(stringResource(Res.string.clear_selection))
             }
+        }
+        if (showTagDialog) {
+            AlertDialog(
+                onDismissRequest = { showTagDialog = false },
+                title = { Text(stringResource(Res.string.batch_tags)) },
+                text = { OutlinedTextField(batchTags, { batchTags = it }, label = { Text(stringResource(Res.string.meme_tags)) }, supportingText = { Text(stringResource(Res.string.batch_tags_hint)) }) },
+                confirmButton = { TextButton(onClick = { controller.tags(selectedIds.toList(), batchTags.split(',', '，', '\n')); showTagDialog = false }) { Text(stringResource(Res.string.save_changes)) } },
+                dismissButton = { TextButton(onClick = { showTagDialog = false }) { Text(stringResource(Res.string.clear_search)) } }
+            )
         }
         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
         val density = LocalDensity.current

@@ -38,6 +38,7 @@ interface LibraryRepository {
     suspend fun originals(ids: List<String>): List<OriginalFile>
     suspend fun setFavorites(ids: List<String>, favorite: Boolean)
     suspend fun setDeleted(ids: List<String>, deleted: Boolean)
+    suspend fun setTags(ids: List<String>, tags: List<String>)
 }
 
 interface ImportPicker {
